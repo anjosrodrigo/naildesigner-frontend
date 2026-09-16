@@ -7,6 +7,7 @@ import Agenda from './pages/Agenda'
 import Clients from './pages/Clients'
 import Services from './pages/Services'
 import Revenue from './pages/Revenue'
+import AddOns from './pages/AddOns'
 
 // Protected Route
 function ProtectedRoute({ children }) {
@@ -44,6 +45,11 @@ function App() {
                             <Revenue />
                         </ProtectedRoute>
                     } />
+					<Route path="/addons" element={
+						<ProtectedRoute>
+							<AddOns />
+						</ProtectedRoute>
+					} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             </AuthProvider>

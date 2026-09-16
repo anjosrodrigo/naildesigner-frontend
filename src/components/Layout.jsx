@@ -17,6 +17,7 @@ export default function Layout({ children }) {
         { path: '/',         icon: '📅', label: 'Agenda'      },
         { path: '/clients',  icon: '👥', label: 'Clientes'    },
         { path: '/services', icon: '💅', label: 'Serviços'    },
+		{ path: '/addons',   icon: '✨', label: 'Adicionais'  },
         { path: '/revenue',  icon: '💰', label: 'Faturamento' },
     ]
 
