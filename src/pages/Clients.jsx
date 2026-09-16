@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
+import ConfirmModal from '../components/ConfirmModal'
 import api from '../services/api'
 
 export default function Clients() {
@@ -8,6 +9,7 @@ export default function Clients() {
     const [error, setError]       = useState('')
     const [showModal, setShowModal] = useState(false)
     const [editingClient, setEditingClient] = useState(null)
+	const [confirmDelete, setConfirmDelete] = useState(null)
 
     const emptyForm = {
         name: '', phone: '', birthDay: '', birthMonth: '', color: '#C9956C'
@@ -126,7 +128,7 @@ export default function Clients() {
                                         ✏️
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(client.id)}
+                                        onClick={() => setConfirmDelete(client.id)}
                                         className="text-red-400 hover:text-white transition px-3 py-1 rounded-lg hover:bg-red-900"
                                     >
                                         🗑️
@@ -229,6 +231,13 @@ export default function Clients() {
                     </div>
                 </div>
             )}
+			{confirmDelete && (
+				<ConfirmModal
+					message="Deseja excluir este serviço? Esta ação não pode ser desfeita."
+					onConfirm={handleDelete}
+					onCancel={() => setConfirmDelete(null)}
+				/>
+			)}
         </Layout>
     )
 }
