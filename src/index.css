@@ -1,1 +1,43 @@
 @import "tailwindcss";
+
+* {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Calendar Dark Theme */
+.calendar-dark .fc-theme-standard td,
+.calendar-dark .fc-theme-standard th,
+.calendar-dark .fc-theme-standard .fc-scrollgrid {
+    border-color: rgba(45, 50, 67, 0.6);
+}
+
+.calendar-dark .fc-col-header-cell-cushion,
+.calendar-dark .fc-daygrid-day-number {
+    color: #8a90a4;
+}
+
+.calendar-dark .fc-day-today {
+    background-color: rgba(224, 122, 147, 0.08) !important;
+}
+
+.calendar-dark .fc-button-primary {
+    background-color: #e07a93 !important;
+    border-color: #e07a93 !important;
+}
+
+.calendar-dark .fc-toolbar-title {
+    color: #f4a5b8;
+    font-size: 1.1rem !important;
+    font-weight: 600;
+}
+
+.calendar-dark .fc-daygrid-day:hover {
+    background-color: rgba(224, 122, 147, 0.05) !important;
+    cursor: pointer;
+}
+
+.calendar-dark .fc-event {
+    border-radius: 4px !important;
+    border: none !important;
+    font-size: 11px !important;
+}
