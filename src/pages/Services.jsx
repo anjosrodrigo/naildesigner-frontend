@@ -3,19 +3,15 @@ import Layout from '../components/Layout'
 import ConfirmModal from '../components/ConfirmModal'
 import api from '../services/api'
 
-const pricingTypeLabels = {
-    0: 'Mão Inteira',
-    1: 'Por Unha',
-    2: 'Ambos'
-}
+const pricingTypeLabels = { 0: 'Mão Inteira', 1: 'Por Unha', 2: 'Ambos' }
 
 export default function Services() {
-    const [services, setServices]   = useState([])
-    const [loading, setLoading]     = useState(true)
-    const [error, setError]         = useState('')
-    const [showModal, setShowModal] = useState(false)
-    const [editingService, setEditingService] = useState(null)
-	const [confirmDelete, setConfirmDelete] = useState(null)
+    const [services, setServices]       = useState([])
+    const [loading, setLoading]         = useState(true)
+    const [error, setError]             = useState('')
+    const [showModal, setShowModal]     = useState(false)
+    const [editingService, setEditingService]   = useState(null)
+    const [confirmDelete, setConfirmDelete]     = useState(null)
 
     const emptyForm = {
         name: '', description: '', pricingType: 0,
@@ -38,13 +34,8 @@ export default function Services() {
     }
 
     const openModal = (service = null) => {
-        if (service) {
-            setForm(service)
-            setEditingService(service)
-        } else {
-            setForm(emptyForm)
-            setEditingService(null)
-        }
+        if (service) { setForm(service); setEditingService(service) }
+        else { setForm(emptyForm); setEditingService(null) }
         setShowModal(true)
     }
 
@@ -58,11 +49,8 @@ export default function Services() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            if (editingService) {
-                await api.put(`/servicetype/${editingService.id}`, form)
-            } else {
-                await api.post('/servicetype', form)
-            }
+            if (editingService) await api.put(`/servicetype/${editingService.id}`, form)
+            else await api.post('/servicetype', form)
             loadServices()
             closeModal()
         } catch (err) {
@@ -71,15 +59,15 @@ export default function Services() {
     }
 
     const handleDelete = async () => {
-		try {
-			await api.delete(`/servicetype/${confirmDelete}`)
-			loadServices()
-			setConfirmDelete(null)
-		} catch {
-			setError('Erro ao excluir serviço.')
-			setConfirmDelete(null)
-		}
-	}
+        try {
+            await api.delete(`/servicetype/${confirmDelete}`)
+            loadServices()
+            setConfirmDelete(null)
+        } catch {
+            setError('Erro ao excluir serviço.')
+            setConfirmDelete(null)
+        }
+    }
 
     return (
         <Layout>
@@ -87,48 +75,91 @@ export default function Services() {
 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-[#C9956C]">💅 Serviços</h1>
+                    <div>
+                        <h1 className="font-semibold" style={{ fontSize: '24px', color: '#e1e1ef', letterSpacing: '-0.01em' }}>
+                            Serviços
+                        </h1>
+                        <p style={{ fontSize: '13px', color: '#8a90a4' }}>
+                            {services.length} serviço{services.length !== 1 ? 's' : ''} cadastrado{services.length !== 1 ? 's' : ''}
+                        </p>
+                    </div>
                     <button
                         onClick={() => openModal()}
-                        className="bg-[#C9956C] hover:bg-[#B76E79] text-white px-4 py-2 rounded-lg transition"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all"
+                        style={{
+                            background: 'linear-gradient(135deg, #e07a93, #b85d77)',
+                            color: 'white',
+                            fontSize: '13px',
+                            boxShadow: '0 4px 14px rgba(224,122,147,0.35)'
+                        }}
                     >
-                        + Novo Serviço
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                        Novo Serviço
                     </button>
                 </div>
 
-                {error && <p className="text-red-400 mb-4">{error}</p>}
+                {error && <p className="mb-4" style={{ color: '#ffb4ab', fontSize: '13px' }}>{error}</p>}
 
                 {loading ? (
-                    <p className="text-gray-400">Carregando...</p>
+                    <p style={{ color: '#8a90a4' }}>Carregando...</p>
                 ) : services.length === 0 ? (
-                    <p className="text-gray-400">Nenhum serviço cadastrado.</p>
+                    <div className="text-center py-16">
+                        <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#32343e' }}>spa</span>
+                        <p className="mt-2" style={{ color: '#8a90a4' }}>Nenhum serviço cadastrado.</p>
+                    </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         {services.map(service => (
-                            <div key={service.id} className="bg-[#2a2a2a] rounded-xl p-4 flex items-center gap-4">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-white font-semibold">{service.name}</p>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${service.isActive ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-400'}`}>
+                            <div key={service.id}
+                                className="flex items-center gap-4 p-4 rounded-2xl transition-all"
+                                style={{
+                                    background: 'rgba(29,31,40,0.9)',
+                                    border: '1px solid rgba(45,50,67,0.5)'
+                                }}>
+
+                                {/* Icon */}
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                    style={{ background: 'rgba(224,122,147,0.12)' }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#ffb1c2' }}>spa</span>
+                                </div>
+
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="font-semibold" style={{ fontSize: '14px', color: '#e1e1ef' }}>
+                                            {service.name}
+                                        </p>
+                                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                                            style={service.isActive
+                                                ? { background: 'rgba(78,205,196,0.12)', color: '#5dd9d0' }
+                                                : { background: 'rgba(50,52,62,0.8)', color: '#8a90a4' }}>
                                             {service.isActive ? 'Ativo' : 'Inativo'}
                                         </span>
                                     </div>
-                                    <p className="text-gray-400 text-sm">{service.description}</p>
-                                    <div className="flex gap-4 mt-1">
-                                        <p className="text-[#C9956C] text-sm">💰 R$ {service.price.toFixed(2)}</p>
-                                        <p className="text-gray-400 text-sm">⏱️ {service.durationMinutes} min</p>
-                                        <p className="text-gray-400 text-sm">📋 {pricingTypeLabels[service.pricingType]}</p>
+                                    <p className="truncate" style={{ fontSize: '12px', color: '#8a90a4' }}>{service.description}</p>
+                                    <div className="flex gap-3 mt-1 flex-wrap">
+                                        <span style={{ fontSize: '12px', color: '#ffb1c2' }}>R$ {service.price.toFixed(2)}</span>
+                                        <span style={{ fontSize: '12px', color: '#8a90a4' }}>⏱ {service.durationMinutes}min</span>
+                                        <span style={{ fontSize: '12px', color: '#8a90a4' }}>{pricingTypeLabels[service.pricingType]}</span>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => openModal(service)}
-                                        className="text-[#C9956C] hover:text-white transition px-3 py-1 rounded-lg hover:bg-[#C9956C22]"
-                                    >✏️</button>
-                                    <button
-                                        onClick={() => setConfirmDelete(service.id)}
-                                        className="text-red-400 hover:text-white transition px-3 py-1 rounded-lg hover:bg-red-900"
-                                    >🗑️</button>
+
+                                {/* Actions */}
+                                <div className="flex gap-1">
+                                    <button onClick={() => openModal(service)}
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                                        style={{ color: '#8a90a4' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,122,147,0.1)'; e.currentTarget.style.color = '#ffb1c2' }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8a90a4' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+                                    </button>
+                                    <button onClick={() => setConfirmDelete(service.id)}
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                                        style={{ color: '#8a90a4' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,100,100,0.1)'; e.currentTarget.style.color = '#ffb4ab' }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8a90a4' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -138,41 +169,49 @@ export default function Services() {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#2a2a2a] rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold text-[#C9956C] mb-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+                    <div className="w-full max-w-md rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
+                        style={{
+                            background: 'rgba(29,31,40,0.98)',
+                            border: '1px solid rgba(45,50,67,0.5)',
+                            boxShadow: '0 24px 48px rgba(0,0,0,0.6)'
+                        }}>
+
+                        <h2 className="font-semibold mb-5" style={{ fontSize: '20px', color: '#e1e1ef' }}>
                             {editingService ? 'Editar Serviço' : 'Novo Serviço'}
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
+
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Nome</label>
-                                <input
-                                    type="text"
-                                    value={form.name}
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Nome</label>
+                                <input type="text" value={form.name}
                                     onChange={e => setForm({...form, name: e.target.value})}
-                                    className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                    required
-                                />
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                    onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
+                                    required />
                             </div>
 
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Descrição</label>
-                                <textarea
-                                    value={form.description}
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Descrição</label>
+                                <textarea value={form.description}
                                     onChange={e => setForm({...form, description: e.target.value})}
-                                    className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                    rows={2}
-                                />
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all resize-none"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                    onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
+                                    rows={2} />
                             </div>
 
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Tipo de cobrança</label>
-                                <select
-                                    value={form.pricingType}
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Tipo de cobrança</label>
+                                <select value={form.pricingType}
                                     onChange={e => setForm({...form, pricingType: parseInt(e.target.value)})}
-                                    className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                >
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}>
                                     <option value={0}>Mão Inteira</option>
                                     <option value={1}>Por Unha</option>
                                     <option value={2}>Ambos</option>
@@ -181,76 +220,85 @@ export default function Services() {
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-gray-300 text-sm mb-1">Preço (R$)</label>
-                                    <input
-                                        type="number"
-                                        value={form.price}
+                                    <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Preço (R$)</label>
+                                    <input type="number" value={form.price}
                                         onChange={e => setForm({...form, price: parseFloat(e.target.value)})}
-                                        className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                        min="0" step="0.01" required
-                                    />
+                                        className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                        style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                        onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                        onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
+                                        min="0" step="0.01" required />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-300 text-sm mb-1">Preço por unha (R$)</label>
-                                    <input
-                                        type="number"
-                                        value={form.pricePerUnit || ''}
+                                    <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Preço por unha (R$)</label>
+                                    <input type="number" value={form.pricePerUnit || ''}
                                         onChange={e => setForm({...form, pricePerUnit: parseFloat(e.target.value)})}
-                                        className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
+                                        className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                        style={{
+                                            background: '#0c0e16', color: '#e1e1ef', fontSize: '14px',
+                                            border: '1px solid rgba(45,50,67,0.8)',
+                                            opacity: form.pricingType === 0 ? 0.4 : 1
+                                        }}
+                                        onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                        onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
                                         min="0" step="0.01"
-                                        disabled={form.pricingType === 0}
-                                    />
+                                        disabled={form.pricingType === 0} />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Duração (minutos)</label>
-                                <select
-                                    value={form.durationMinutes}
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Duração</label>
+                                <select value={form.durationMinutes}
                                     onChange={e => setForm({...form, durationMinutes: parseInt(e.target.value)})}
-                                    className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                >
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}>
                                     {[30,60,90,120,150,180,210,240].map(min => (
-                                        <option key={min} value={min}>{min} min ({min/60 < 1 ? '30min' : `${Math.floor(min/60)}h${min%60 > 0 ? `${min%60}min` : ''}`})</option>
+                                        <option key={min} value={min}>
+                                            {min}min ({Math.floor(min/60) > 0 ? `${Math.floor(min/60)}h` : ''}{min%60 > 0 ? `${min%60}min` : ''})
+                                        </option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="isActive"
-                                    checked={form.isActive}
-                                    onChange={e => setForm({...form, isActive: e.target.checked})}
-                                    className="accent-[#C9956C]"
-                                />
-                                <label htmlFor="isActive" className="text-gray-300 text-sm">Serviço ativo</label>
+                            <div className="flex items-center gap-2 cursor-pointer"
+                                onClick={() => setForm({...form, isActive: !form.isActive})}>
+                                <div className="w-4 h-4 rounded flex items-center justify-center transition-all"
+                                    style={{ background: form.isActive ? '#ffb1c2' : '#0c0e16', border: '1px solid rgba(45,50,67,0.8)' }}>
+                                    {form.isActive && <span style={{ color: '#5e122c', fontSize: '10px', fontWeight: 'bold' }}>✓</span>}
+                                </div>
+                                <label className="cursor-pointer" style={{ fontSize: '13px', color: '#d9c0c4' }}>Serviço ativo</label>
                             </div>
 
-                            {error && <p className="text-red-400 text-sm">{error}</p>}
+                            {error && <p style={{ fontSize: '12px', color: '#ffb4ab' }}>{error}</p>}
 
                             <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="flex-1 border border-gray-600 text-gray-400 py-2 rounded-lg hover:bg-gray-700 transition"
-                                >Cancelar</button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 bg-[#C9956C] hover:bg-[#B76E79] text-white py-2 rounded-lg transition"
-                                >{editingService ? 'Salvar' : 'Cadastrar'}</button>
+                                <button type="button" onClick={closeModal}
+                                    className="flex-1 py-2.5 rounded-xl font-medium transition-all"
+                                    style={{ border: '1px solid rgba(45,50,67,0.8)', color: '#8a90a4', fontSize: '13px' }}>
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                    className="flex-1 py-2.5 rounded-xl font-semibold transition-all"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #e07a93, #b85d77)',
+                                        color: 'white', fontSize: '13px',
+                                        boxShadow: '0 4px 14px rgba(224,122,147,0.35)'
+                                    }}>
+                                    {editingService ? 'Salvar' : 'Cadastrar'}
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-			{confirmDelete && (
-				<ConfirmModal
-					message="Deseja excluir este serviço? Esta ação não pode ser desfeita."
-					onConfirm={handleDelete}
-					onCancel={() => setConfirmDelete(null)}
-				/>
-			)}
+
+            {confirmDelete && (
+                <ConfirmModal
+                    message="Deseja excluir este serviço? Esta ação não pode ser desfeita."
+                    onConfirm={handleDelete}
+                    onCancel={() => setConfirmDelete(null)}
+                />
+            )}
         </Layout>
     )
 }
