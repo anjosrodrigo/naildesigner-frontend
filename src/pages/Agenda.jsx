@@ -380,12 +380,6 @@ export default function Agenda() {
 													))}
 												</div>
 											)}
-
-                                            {dayApps.length > 0 && (
-                                                <span style={{ fontSize: '9px', color: dayApps.length >= 4 ? '#ffb1c2' : '#8a90a4' }}>
-                                                    {dayApps.length >= 4 ? `Lotado (${dayApps.length})` : `${dayApps.length} atend.`}
-                                                </span>
-                                            )}
                                         </div>
                                     )
                                 })}

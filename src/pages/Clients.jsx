@@ -132,8 +132,9 @@ export default function Clients() {
                                         {client.name}
                                     </p>
                                     <p style={{ fontSize: '12px', color: '#8a90a4' }}>{client.phone}</p>
-                                    <p style={{ fontSize: '12px', color: '#8a90a4' }}>
-                                        🎂 {String(client.birthDay).padStart(2,'0')}/{String(client.birthMonth).padStart(2,'0')}
+                                    <p className="flex items-center gap-1" style={{ fontSize: '12px', color: '#8a90a4' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>cake</span>
+                                        {String(client.birthDay).padStart(2,'0')}/{String(client.birthMonth).padStart(2,'0')}
                                     </p>
                                 </div>
 
