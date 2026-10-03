@@ -22,7 +22,7 @@ export default function Layout({ children }) {
     ]
 
     return (
-        <div className="min-h-screen flex" style={{ background: '#11131c', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <div className="flex" style={{ background: '#11131c', fontFamily: 'Plus Jakarta Sans, sans-serif', minHeight: '100dvh' }}>
 
             {/* Overlay mobile */}
             {menuOpen && (

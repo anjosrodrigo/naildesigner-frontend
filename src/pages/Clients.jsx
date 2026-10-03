@@ -4,21 +4,17 @@ import ConfirmModal from '../components/ConfirmModal'
 import api from '../services/api'
 
 export default function Clients() {
-    const [clients, setClients]   = useState([])
-    const [loading, setLoading]   = useState(true)
-    const [error, setError]       = useState('')
-    const [showModal, setShowModal] = useState(false)
-    const [editingClient, setEditingClient] = useState(null)
-	const [confirmDelete, setConfirmDelete] = useState(null)
+    const [clients, setClients]         = useState([])
+    const [loading, setLoading]         = useState(true)
+    const [error, setError]             = useState('')
+    const [showModal, setShowModal]     = useState(false)
+    const [editingClient, setEditingClient]   = useState(null)
+    const [confirmDelete, setConfirmDelete]   = useState(null)
 
-    const emptyForm = {
-        name: '', phone: '', birthDay: '', birthMonth: '', color: '#C9956C'
-    }
+    const emptyForm = { name: '', phone: '', birthDay: '', birthMonth: '', color: '#e07a93' }
     const [form, setForm] = useState(emptyForm)
 
-    useEffect(() => {
-        loadClients()
-    }, [])
+    useEffect(() => { loadClients() }, [])
 
     const loadClients = async () => {
         try {
@@ -33,13 +29,8 @@ export default function Clients() {
     }
 
     const openModal = (client = null) => {
-        if (client) {
-            setForm(client)
-            setEditingClient(client)
-        } else {
-            setForm(emptyForm)
-            setEditingClient(null)
-        }
+        if (client) { setForm(client); setEditingClient(client) }
+        else { setForm(emptyForm); setEditingClient(null) }
         setShowModal(true)
     }
 
@@ -47,16 +38,14 @@ export default function Clients() {
         setShowModal(false)
         setEditingClient(null)
         setForm(emptyForm)
+        setError('')
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            if (editingClient) {
-                await api.put(`/client/${editingClient.id}`, form)
-            } else {
-                await api.post('/client', form)
-            }
+            if (editingClient) await api.put(`/client/${editingClient.id}`, form)
+            else await api.post('/client', form)
             loadClients()
             closeModal()
         } catch (err) {
@@ -64,13 +53,14 @@ export default function Clients() {
         }
     }
 
-    const handleDelete = async (id) => {
-        if (!confirm('Deseja excluir esta cliente?')) return
+    const handleDelete = async () => {
         try {
-            await api.delete(`/client/${id}`)
+            await api.delete(`/client/${confirmDelete}`)
             loadClients()
+            setConfirmDelete(null)
         } catch {
             setError('Erro ao excluir cliente.')
+            setConfirmDelete(null)
         }
     }
 
@@ -80,58 +70,88 @@ export default function Clients() {
 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-[#C9956C]">👥 Clientes</h1>
+                    <div>
+                        <h1 className="font-semibold" style={{ fontSize: '24px', color: '#e1e1ef', letterSpacing: '-0.01em' }}>
+                            Clientes
+                        </h1>
+                        <p style={{ fontSize: '13px', color: '#8a90a4' }}>
+                            {clients.length} cliente{clients.length !== 1 ? 's' : ''} cadastrada{clients.length !== 1 ? 's' : ''}
+                        </p>
+                    </div>
                     <button
                         onClick={() => openModal()}
-                        className="bg-[#C9956C] hover:bg-[#B76E79] text-white px-4 py-2 rounded-lg transition"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all"
+                        style={{
+                            background: 'linear-gradient(135deg, #e07a93, #b85d77)',
+                            color: 'white',
+                            fontSize: '13px',
+                            boxShadow: '0 4px 14px rgba(224,122,147,0.35)'
+                        }}
                     >
-                        + Nova Cliente
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                        Nova Cliente
                     </button>
                 </div>
 
-                {/* Error */}
-                {error && <p className="text-red-400 mb-4">{error}</p>}
+                {error && <p className="mb-4" style={{ color: '#ffb4ab', fontSize: '13px' }}>{error}</p>}
 
-                {/* Loading */}
                 {loading ? (
-                    <p className="text-gray-400">Carregando...</p>
+                    <p style={{ color: '#8a90a4' }}>Carregando...</p>
                 ) : clients.length === 0 ? (
-                    <p className="text-gray-400">Nenhuma cliente cadastrada.</p>
+                    <div className="text-center py-16">
+                        <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#32343e' }}>group</span>
+                        <p className="mt-2" style={{ color: '#8a90a4' }}>Nenhuma cliente cadastrada.</p>
+                    </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         {clients.map(client => (
-                            <div
-                                key={client.id}
-                                className="bg-[#2a2a2a] rounded-xl p-4 flex items-center gap-4"
-                            >
-                                {/* Color indicator */}
-                                <div
-                                    className="w-3 h-12 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: client.color }}
-                                />
+                            <div key={client.id}
+                                className="flex items-center gap-4 p-4 rounded-2xl transition-all"
+                                style={{
+                                    background: 'rgba(29,31,40,0.9)',
+                                    border: '1px solid rgba(45,50,67,0.5)'
+                                }}>
+
+                                {/* Color bar */}
+                                <div className="w-1 h-12 rounded-full flex-shrink-0"
+                                    style={{ background: client.color }} />
+
+                                {/* Avatar */}
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-semibold"
+                                    style={{
+                                        background: `${client.color}22`,
+                                        color: client.color,
+                                        fontSize: '16px'
+                                    }}>
+                                    {client.name.charAt(0).toUpperCase()}
+                                </div>
 
                                 {/* Info */}
-                                <div className="flex-1">
-                                    <p className="text-white font-semibold">{client.name}</p>
-                                    <p className="text-gray-400 text-sm">{client.phone}</p>
-                                    <p className="text-gray-400 text-sm">
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold truncate" style={{ fontSize: '14px', color: '#e1e1ef' }}>
+                                        {client.name}
+                                    </p>
+                                    <p style={{ fontSize: '12px', color: '#8a90a4' }}>{client.phone}</p>
+                                    <p style={{ fontSize: '12px', color: '#8a90a4' }}>
                                         🎂 {String(client.birthDay).padStart(2,'0')}/{String(client.birthMonth).padStart(2,'0')}
                                     </p>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => openModal(client)}
-                                        className="text-[#C9956C] hover:text-white transition px-3 py-1 rounded-lg hover:bg-[#C9956C22]"
-                                    >
-                                        ✏️
+                                <div className="flex gap-1">
+                                    <button onClick={() => openModal(client)}
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                                        style={{ color: '#8a90a4' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,122,147,0.1)'; e.currentTarget.style.color = '#ffb1c2' }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8a90a4' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
                                     </button>
-                                    <button
-                                        onClick={() => setConfirmDelete(client.id)}
-                                        className="text-red-400 hover:text-white transition px-3 py-1 rounded-lg hover:bg-red-900"
-                                    >
-                                        🗑️
+                                    <button onClick={() => setConfirmDelete(client.id)}
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                                        style={{ color: '#8a90a4' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,100,100,0.1)'; e.currentTarget.style.color = '#ffb4ab' }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8a90a4' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
                                     </button>
                                 </div>
                             </div>
@@ -142,88 +162,109 @@ export default function Clients() {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#2a2a2a] rounded-2xl p-6 w-full max-w-md">
-                        <h2 className="text-xl font-bold text-[#C9956C] mb-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+                    <div className="w-full max-w-md rounded-3xl p-6"
+                        style={{
+                            background: 'rgba(29,31,40,0.98)',
+                            border: '1px solid rgba(45,50,67,0.5)',
+                            boxShadow: '0 24px 48px rgba(0,0,0,0.6)'
+                        }}>
+
+                        <h2 className="font-semibold mb-5" style={{ fontSize: '20px', color: '#e1e1ef' }}>
                             {editingClient ? 'Editar Cliente' : 'Nova Cliente'}
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
+
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Nome</label>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Nome</label>
                                 <input
                                     type="text"
                                     value={form.name}
                                     onChange={e => setForm({...form, name: e.target.value})}
-                                    className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                    onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Telefone</label>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Telefone</label>
                                 <input
                                     type="text"
                                     value={form.phone}
                                     onChange={e => setForm({...form, phone: e.target.value})}
-                                    className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
                                     placeholder="5541999990000"
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                    onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
                                     required
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-gray-300 text-sm mb-1">Dia nasc.</label>
+                                    <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Dia nasc.</label>
                                     <input
                                         type="number"
                                         value={form.birthDay}
                                         onChange={e => setForm({...form, birthDay: parseInt(e.target.value)})}
-                                        className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                        min="1" max="31"
-                                        required
+                                        className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                        style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                        onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                        onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
+                                        min="1" max="31" required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-300 text-sm mb-1">Mês nasc.</label>
+                                    <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Mês nasc.</label>
                                     <input
                                         type="number"
                                         value={form.birthMonth}
                                         onChange={e => setForm({...form, birthMonth: parseInt(e.target.value)})}
-                                        className="w-full bg-[#1a1a1a] text-white border border-[#C9956C33] rounded-lg px-4 py-2 focus:outline-none focus:border-[#C9956C]"
-                                        min="1" max="12"
-                                        required
+                                        className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                        style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                        onFocus={e => e.target.style.borderColor = '#e07a93'}
+                                        onBlur={e => e.target.style.borderColor = 'rgba(45,50,67,0.8)'}
+                                        min="1" max="12" required
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-gray-300 text-sm mb-1">Cor da cliente</label>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Cor da cliente</label>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="color"
                                         value={form.color}
                                         onChange={e => setForm({...form, color: e.target.value})}
-                                        className="w-12 h-10 rounded cursor-pointer border-0 bg-transparent"
+                                        className="w-10 h-10 rounded-lg cursor-pointer border-0"
+                                        style={{ background: 'transparent' }}
                                     />
-                                    <span className="text-gray-400 text-sm">{form.color}</span>
+                                    <span style={{ fontSize: '13px', color: '#8a90a4' }}>{form.color}</span>
                                 </div>
                             </div>
 
-                            {error && <p className="text-red-400 text-sm">{error}</p>}
+                            {error && <p style={{ fontSize: '12px', color: '#ffb4ab' }}>{error}</p>}
 
                             <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="flex-1 border border-gray-600 text-gray-400 py-2 rounded-lg hover:bg-gray-700 transition"
-                                >
+                                <button type="button" onClick={closeModal}
+                                    className="flex-1 py-2.5 rounded-xl font-medium transition-all"
+                                    style={{ border: '1px solid rgba(45,50,67,0.8)', color: '#8a90a4', fontSize: '13px' }}>
                                     Cancelar
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 bg-[#C9956C] hover:bg-[#B76E79] text-white py-2 rounded-lg transition"
-                                >
+                                <button type="submit"
+                                    className="flex-1 py-2.5 rounded-xl font-semibold transition-all"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #e07a93, #b85d77)',
+                                        color: 'white',
+                                        fontSize: '13px',
+                                        boxShadow: '0 4px 14px rgba(224,122,147,0.35)'
+                                    }}>
                                     {editingClient ? 'Salvar' : 'Cadastrar'}
                                 </button>
                             </div>
@@ -231,13 +272,14 @@ export default function Clients() {
                     </div>
                 </div>
             )}
-			{confirmDelete && (
-				<ConfirmModal
-					message="Deseja excluir este serviço? Esta ação não pode ser desfeita."
-					onConfirm={handleDelete}
-					onCancel={() => setConfirmDelete(null)}
-				/>
-			)}
+
+            {confirmDelete && (
+                <ConfirmModal
+                    message="Deseja excluir esta cliente? Esta ação não pode ser desfeita."
+                    onConfirm={handleDelete}
+                    onCancel={() => setConfirmDelete(null)}
+                />
+            )}
         </Layout>
     )
 }
