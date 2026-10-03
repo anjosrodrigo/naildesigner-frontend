@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
 import api from '../services/api'
+import ConfirmModal from '../components/ConfirmModal'
 
 const statusLabels = { 0: 'Agendado', 1: 'Confirmado', 2: 'Cancelado', 3: 'Concluído' }
 const statusStyles = {
@@ -24,6 +25,11 @@ export default function Agenda() {
     const [selectedDate, setSelectedDate] = useState(new Date())
 	const [workload, setWorkload] = useState([])
 	const [blockedTimes, setBlockedTimes] = useState([])
+    const [showBlockModal, setShowBlockModal] = useState(false)
+    const emptyBlockForm = { startTime: '', endTime: '', reason: '' }
+    const [blockForm, setBlockForm] = useState(emptyBlockForm)
+    const [showDropdown, setShowDropdown] = useState(false)
+    const [confirmDeleteBlock, setConfirmDeleteBlock] = useState(null)
 
     const emptyForm = { clientId: '', serviceTypeId: '', startTime: '', discount: 0, addOns: [] }
     const [form, setForm] = useState(emptyForm)
@@ -87,6 +93,29 @@ export default function Agenda() {
 
     const selectedDayBlocked = blockedTimes.filter(b => b.startTime.startsWith(selectedDateStr))
 
+    const handleBlockSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            await api.post('/blockedtime', blockForm)
+            loadData()
+            setShowBlockModal(false)
+            setBlockForm(emptyBlockForm)
+        } catch (err) {
+            alert(err.response?.data?.message || 'Erro ao criar bloqueio.')
+        }
+    }
+
+    const handleDeleteBlock = async () => {
+        try {
+            await api.delete(`/blockedtime/${confirmDeleteBlock}`)
+            loadData()
+            setConfirmDeleteBlock(null)
+        } catch {
+            alert('Erro ao excluir bloqueio.')
+            setConfirmDeleteBlock(null)
+        }
+    }
+
     const activeAppointments = appointments.filter(a => a.status === 0 || a.status === 1)
 
     const formatTime = (dateStr) => new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -138,8 +167,10 @@ export default function Agenda() {
                             {activeAppointments.length} agendamento{activeAppointments.length !== 1 ? 's' : ''} ativo{activeAppointments.length !== 1 ? 's' : ''}
                         </p>
                     </div>
+                    <div className="flex gap-2">
+                    <div className="relative">
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => setShowDropdown(!showDropdown)}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all"
                         style={{
                             background: 'linear-gradient(135deg, #e07a93, #b85d77)',
@@ -148,8 +179,46 @@ export default function Agenda() {
                         }}
                     >
                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-                        Agendar
+                        Novo
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                            {showDropdown ? 'expand_less' : 'expand_more'}
+                        </span>
                     </button>
+
+                    {showDropdown && (
+                        <>
+                            {/* Overlay para fechar ao clicar fora */}
+                            <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
+
+                            <div className="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden z-20"
+                                style={{
+                                    background: 'rgba(29,31,40,0.98)',
+                                    border: '1px solid rgba(45,50,67,0.5)',
+                                    boxShadow: '0 12px 32px rgba(0,0,0,0.5)'
+                                }}>
+                                <button
+                                    onClick={() => { setShowModal(true); setShowDropdown(false) }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 transition-all text-left"
+                                    style={{ color: '#e1e1ef' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,122,147,0.1)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#ffb1c2' }}>event</span>
+                                    <span style={{ fontSize: '13px' }}>Agendar</span>
+                                </button>
+                                <button
+                                    onClick={() => { setShowBlockModal(true); setShowDropdown(false) }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 transition-all text-left"
+                                    style={{ color: '#e1e1ef' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,122,147,0.1)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#a18b8f' }}>block</span>
+                                    <span style={{ fontSize: '13px' }}>Bloquear Horário</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+                </div>
                 </div>
 
                 {loading ? (
@@ -332,6 +401,11 @@ export default function Agenda() {
                                                     {formatTime(b.startTime)} – {formatTime(b.endTime)}
                                                 </p>
                                             </div>
+                                            <button onClick={() => setConfirmDeleteBlock(b.id)}
+                                                className="p-1.5 rounded-lg transition-colors"
+                                                style={{ color: '#8a90a4' }}>
+                                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                                            </button>
                                         </div>
                                     ))}
                                     {dayAppointments.map(a => {
@@ -482,6 +556,77 @@ export default function Agenda() {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {showBlockModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+                    <div className="w-full max-w-md rounded-3xl p-6"
+                        style={{
+                            background: 'rgba(29,31,40,0.98)',
+                            border: '1px solid rgba(45,50,67,0.5)',
+                            boxShadow: '0 24px 48px rgba(0,0,0,0.6)'
+                        }}>
+
+                        <h2 className="font-semibold mb-5" style={{ fontSize: '20px', color: '#e1e1ef' }}>
+                            Bloquear Horário
+                        </h2>
+
+                        <form onSubmit={handleBlockSubmit} className="space-y-4">
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Início</label>
+                                <input type="datetime-local" value={blockForm.startTime}
+                                    onChange={e => setBlockForm({...blockForm, startTime: e.target.value})}
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    required />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Fim</label>
+                                <input type="datetime-local" value={blockForm.endTime}
+                                    onChange={e => setBlockForm({...blockForm, endTime: e.target.value})}
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    required />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Motivo (opcional)</label>
+                                <input type="text" value={blockForm.reason}
+                                    onChange={e => setBlockForm({...blockForm, reason: e.target.value})}
+                                    placeholder="Ex: Compromisso pessoal"
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }} />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button type="button"
+                                    onClick={() => { setShowBlockModal(false); setBlockForm(emptyBlockForm) }}
+                                    className="flex-1 py-2.5 rounded-xl font-medium"
+                                    style={{ border: '1px solid rgba(45,50,67,0.8)', color: '#8a90a4', fontSize: '13px' }}>
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                    className="flex-1 py-2.5 rounded-xl font-semibold"
+                                    style={{
+                                        background: '#544245',
+                                        color: '#e1e1ef', fontSize: '13px'
+                                    }}>
+                                    Bloquear
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {confirmDeleteBlock && (
+                <ConfirmModal
+                    message="Deseja excluir este bloqueio de horário?"
+                    onConfirm={handleDeleteBlock}
+                    onCancel={() => setConfirmDeleteBlock(null)}
+                />
             )}
         </Layout>
     )
