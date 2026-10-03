@@ -29,6 +29,8 @@ export default function Login() {
             setLoading(false)
         }
     }
+	
+	const savedUserName = localStorage.getItem('lastUser')?.split(' ')[0]
 
     return (
         <div className="min-h-screen flex items-center justify-center" style={{ background: '#11131c' }}>
@@ -83,21 +85,22 @@ export default function Login() {
                         </div>
 
                         {/* Welcome */}
-                        <div className="mt-6 mb-5 rounded-2xl p-3.5 flex items-center gap-3"
-                            style={{ background: 'rgba(40,41,51,0.80)' }}>
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                                style={{ background: '#32343e' }}>
-                                💅
-                            </div>
-                            <div className="flex flex-col text-left">
-                                <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.04em', color: '#d9c0c4' }}>
-                                    Sessão Segura
-                                </span>
-                                <span style={{ fontSize: '16px', fontWeight: '600', color: '#e1e1ef' }}>
-                                    Bem-vinda de volta, Daniele
-                                </span>
-                            </div>
-                        </div>
+						<div className="mt-6 mb-5 rounded-2xl p-3.5 flex items-center gap-3"
+							style={{ background: 'rgba(40,41,51,0.80)' }}>
+							<div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+								style={{ background: '#32343e' }}>
+								<span className="material-symbols-outlined"
+									style={{ fontSize: '20px', color: '#ffb1c2' }}>spa</span>
+							</div>
+							<div className="flex flex-col text-left">
+								<span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.04em', color: '#d9c0c4' }}>
+									Sessão Segura
+								</span>
+								<span style={{ fontSize: '16px', fontWeight: '600', color: '#e1e1ef' }}>
+									{savedUserName ? `Bem-vinda de volta, ${savedUserName}` : 'Bem-vinda!'}
+								</span>
+							</div>
+						</div>
 
                         {/* Form */}
                         <form className="flex flex-col gap-4" onSubmit={handleLogin}>
@@ -110,8 +113,8 @@ export default function Login() {
                                     <span style={{ fontSize: '11px', color: '#5dd9d0' }}>Verificado</span>
                                 </label>
                                 <div className="relative flex items-center">
-                                    <span className="absolute left-3.5 pointer-events-none"
-                                        style={{ color: '#a18b8f' }}>@</span>
+                                    <span className="material-symbols-outlined absolute left-3.5 pointer-events-none"
+										style={{ color: '#a18b8f', fontSize: '18px' }}>alternate_email</span>
                                     <input
                                         type="email"
                                         value={email}
@@ -143,8 +146,8 @@ export default function Login() {
                                     </span>
                                 </div>
                                 <div className="relative flex items-center">
-                                    <span className="absolute left-3.5 pointer-events-none"
-                                        style={{ color: '#a18b8f' }}>🔒</span>
+                                    <span className="material-symbols-outlined absolute left-3.5 pointer-events-none"
+										style={{ color: '#a18b8f', fontSize: '18px' }}>lock</span>
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
@@ -167,7 +170,9 @@ export default function Login() {
                                         className="absolute right-3.5 p-1 rounded-lg transition-colors"
                                         style={{ color: '#a18b8f' }}
                                     >
-                                        {showPassword ? '🙈' : '👁️'}
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+											{showPassword ? 'visibility_off' : 'visibility'}
+										</span>
                                     </button>
                                 </div>
                             </div>
@@ -210,39 +215,12 @@ export default function Login() {
                             </button>
                         </form>
 
-                        {/* Divider */}
-                        <div className="relative my-6 flex items-center justify-center">
-                            <div className="w-full h-px" style={{ background: '#32343e' }} />
-                            <span className="absolute px-3"
-                                style={{ background: '#1d1f28', fontSize: '11px', fontWeight: '600', letterSpacing: '0.04em', color: '#a18b8f' }}>
-                                Ou acesse via
-                            </span>
-                        </div>
-
-                        {/* Google Button */}
-                        <button
-                            type="button"
-                            className="w-full py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all"
-                            style={{
-                                background: '#282933',
-                                color: '#e1e1ef',
-                                fontSize: '14px',
-                                fontWeight: '500'
-                            }}
-                        >
-                            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                                <path d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.8 5 12 5z" fill="#EA4335"/>
-                                <path d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z" fill="#4285F4"/>
-                                <path d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.2.2-2 .4-2.7L1.6 6.4C.6 8.3 0 10.5 0 12.8s.6 4.5 1.6 6.4l3.7-2.9z" fill="#FBBC05"/>
-                                <path d="M12 23.6c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.2 0-5.8-2.3-6.7-5.3L1.6 16.5C3.5 20.3 7.4 23.6 12 23.6z" fill="#34A853"/>
-                            </svg>
-                            Entrar com conta Google
-                        </button>
-
                         {/* Security */}
                         <div className="mt-6 flex items-center justify-center gap-1.5"
                             style={{ color: '#a18b8f' }}>
-                            <span style={{ fontSize: '12px' }}>🔒</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#5dd9d0' }}>
+								lock
+							</span>
                             <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.04em' }}>
                                 Criptografia SSL de Ponta a Ponta
                             </span>

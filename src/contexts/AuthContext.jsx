@@ -26,11 +26,13 @@ export function AuthProvider({ children }) {
     }
 
     const logout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        setToken(null)
-        setUser(null)
-    }
+		const user = JSON.parse(localStorage.getItem('user') || 'null')
+		if (user) localStorage.setItem('lastUser', user.name)
+		localStorage.removeItem('token')
+		localStorage.removeItem('user')
+		setToken(null)
+		setUser(null)
+	}
 
     return (
         <AuthContext.Provider value={{ user, token, login, logout, loading }}>
