@@ -30,6 +30,9 @@ export default function Agenda() {
     const [blockForm, setBlockForm] = useState(emptyBlockForm)
     const [showDropdown, setShowDropdown] = useState(false)
     const [confirmDeleteBlock, setConfirmDeleteBlock] = useState(null)
+    const [editingAppointment, setEditingAppointment] = useState(null)
+    const emptyEditForm = { serviceTypeId: '', startTime: '', discount: 0, status: 0, cancellationReason: null, cancellationNotes: '', addOns: [] }
+    const [editForm, setEditForm] = useState(emptyEditForm)
 
     const emptyForm = { clientId: '', serviceTypeId: '', startTime: '', discount: 0, addOns: [] }
     const [form, setForm] = useState(emptyForm)
@@ -153,6 +156,39 @@ export default function Agenda() {
 		const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 		return blockedTimes.filter(b => b.startTime.startsWith(dateStr))
 	}
+
+    const openEditModal = (appointment) => {
+        setEditingAppointment(appointment)
+        setEditForm({
+            serviceTypeId: services.find(s => s.name === appointment.serviceTypeName)?.id || '',
+            startTime: appointment.startTime.slice(0, 16),
+            discount: appointment.discount === 0 ? '' : String(appointment.discount),
+            status: appointment.status,
+            cancellationReason: appointment.cancellationReason,
+            cancellationNotes: appointment.cancellationNotes || '',
+            addOns: []
+        })
+    }
+
+    const closeEditModal = () => {
+        setEditingAppointment(null)
+        setEditForm(emptyEditForm)
+    }
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            await api.put(`/appointment/${editingAppointment.id}`, {
+                ...editForm,
+                serviceTypeId: parseInt(editForm.serviceTypeId),
+                discount: editForm.discount === '' ? 0 : parseFloat(editForm.discount)
+            })
+            loadData()
+            closeEditModal()
+        } catch (err) {
+            alert(err.response?.data?.message || 'Erro ao atualizar agendamento.')
+        }
+    }
 
     return (
         <Layout>
@@ -462,7 +498,8 @@ export default function Agenda() {
                                                         style={statusStyles[a.status]}>
                                                         {statusLabels[a.status]}
                                                     </span>
-                                                    <button className="p-1.5 rounded-lg transition-colors"
+                                                    <button onClick={() => openEditModal(a)}
+                                                        className="p-1.5 rounded-lg transition-colors"
                                                         style={{ color: '#8a90a4' }}>
                                                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
                                                     </button>
@@ -551,6 +588,117 @@ export default function Agenda() {
                                         boxShadow: '0 4px 14px rgba(224,122,147,0.35)'
                                     }}>
                                     Agendar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {editingAppointment && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+                    <div className="w-full max-w-md rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
+                        style={{
+                            background: 'rgba(29,31,40,0.98)',
+                            border: '1px solid rgba(45,50,67,0.5)',
+                            boxShadow: '0 24px 48px rgba(0,0,0,0.6)'
+                        }}>
+
+                        <h2 className="font-semibold mb-1" style={{ fontSize: '20px', color: '#e1e1ef' }}>
+                            Editar Agendamento
+                        </h2>
+                        <p className="mb-5" style={{ fontSize: '13px', color: '#8a90a4' }}>
+                            {editingAppointment.clientName}
+                        </p>
+
+                        <form onSubmit={handleEditSubmit} className="space-y-4">
+
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Serviço</label>
+                                <select value={editForm.serviceTypeId}
+                                    onChange={e => setEditForm({...editForm, serviceTypeId: e.target.value})}
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    required>
+                                    {services.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name} — {s.durationMinutes}min</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Data e hora</label>
+                                <input type="datetime-local" value={editForm.startTime}
+                                    onChange={e => setEditForm({...editForm, startTime: e.target.value})}
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    required />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Desconto (R$)</label>
+                                <input type="number" value={editForm.discount}
+                                    onChange={e => setEditForm({...editForm, discount: e.target.value })}
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                    min="0" step="0.01" />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Status</label>
+                                <select value={editForm.status}
+                                    onChange={e => setEditForm({...editForm, status: parseInt(e.target.value)})}
+                                    className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                    style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}>
+                                    <option value={0}>Agendado</option>
+                                    <option value={1}>Confirmado</option>
+                                    <option value={2}>Cancelado</option>
+                                    <option value={3}>Concluído</option>
+                                </select>
+                            </div>
+
+                            {editForm.status === 2 && (
+                                <>
+                                    <div>
+                                        <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Motivo do cancelamento</label>
+                                        <select value={editForm.cancellationReason ?? ''}
+                                            onChange={e => setEditForm({...editForm, cancellationReason: e.target.value === '' ? null : parseInt(e.target.value)})}
+                                            className="w-full px-4 py-2.5 rounded-xl outline-none transition-all"
+                                            style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}>
+                                            <option value="">Selecione...</option>
+                                            <option value={0}>Não respondeu</option>
+                                            <option value={1}>Cliente cancelou</option>
+                                            <option value={2}>Não compareceu</option>
+                                            <option value={3}>Outro</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block mb-1.5" style={{ fontSize: '12px', fontWeight: '600', color: '#d9c0c4' }}>Observações</label>
+                                        <textarea value={editForm.cancellationNotes}
+                                            onChange={e => setEditForm({...editForm, cancellationNotes: e.target.value})}
+                                            className="w-full px-4 py-2.5 rounded-xl outline-none transition-all resize-none"
+                                            style={{ background: '#0c0e16', color: '#e1e1ef', fontSize: '14px', border: '1px solid rgba(45,50,67,0.8)' }}
+                                            rows={2} />
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="flex gap-3 pt-2">
+                                <button type="button" onClick={closeEditModal}
+                                    className="flex-1 py-2.5 rounded-xl font-medium"
+                                    style={{ border: '1px solid rgba(45,50,67,0.8)', color: '#8a90a4', fontSize: '13px' }}>
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                    className="flex-1 py-2.5 rounded-xl font-semibold"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #e07a93, #b85d77)',
+                                        color: 'white', fontSize: '13px',
+                                        boxShadow: '0 4px 14px rgba(224,122,147,0.35)'
+                                    }}>
+                                    Salvar
                                 </button>
                             </div>
                         </form>
