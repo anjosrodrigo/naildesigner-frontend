@@ -230,7 +230,7 @@ export default function Login() {
                     {/* Copyright */}
                     <div className="mt-6 text-center">
                         <p style={{ fontSize: '12px', color: '#a18b8f' }}>
-                            © 2025 DFreitas Nails Studio • Todos os direitos reservados
+                            © {new Date().getFullYear()} DFreitas Nails Studio • Todos os direitos reservados
                         </p>
                     </div>
                 </div>
