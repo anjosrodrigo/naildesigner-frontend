@@ -33,9 +33,9 @@ export default function Login() {
 	const savedUserName = localStorage.getItem('lastUser')?.split(' ')[0]
 
     return (
-        <div className="min-h-screen flex items-center justify-center" style={{ background: '#11131c' }}>
+        <div className="flex items-center justify-center" style={{ background: '#11131c', minHeight: '100dvh' }}>
             <main className="w-full max-w-sm mx-auto p-space-lg">
-                <div className="flex flex-col w-full relative items-center justify-center py-4">
+                <div className="flex flex-col w-full relative items-center justify-center">
 
                     {/* Ambient Glow */}
                     <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none -z-10"
