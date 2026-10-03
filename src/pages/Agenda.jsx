@@ -22,29 +22,35 @@ export default function Agenda() {
     const [showModal, setShowModal] = useState(false)
     const [currentDate, setCurrentDate] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState(new Date())
+	const [workload, setWorkload] = useState([])
+	const [blockedTimes, setBlockedTimes] = useState([])
 
     const emptyForm = { clientId: '', serviceTypeId: '', startTime: '', discount: 0, addOns: [] }
     const [form, setForm] = useState(emptyForm)
 
-    useEffect(() => { loadData() }, [])
+    useEffect(() => { loadData() }, [currentDate])
 
-    const loadData = async () => {
-        try {
-            setLoading(true)
-            const [appRes, clientRes, serviceRes] = await Promise.all([
-                api.get('/appointment'),
-                api.get('/client'),
-                api.get('/servicetype')
-            ])
-            setAppointments(appRes.data)
-            setClients(clientRes.data)
-            setServices(serviceRes.data)
-        } catch {
-            console.error('Erro ao carregar dados.')
-        } finally {
-            setLoading(false)
-        }
-    }
+	const loadData = async () => {
+		try {
+			setLoading(true)
+			const [appRes, clientRes, serviceRes, blockedRes, workloadRes] = await Promise.all([
+				api.get('/appointment'),
+				api.get('/client'),
+				api.get('/servicetype'),
+				api.get('/blockedtime'),
+				api.get(`/appointment/workload?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`)
+			])
+			setAppointments(appRes.data)
+			setClients(clientRes.data)
+			setServices(serviceRes.data)
+			setBlockedTimes(blockedRes.data)
+			setWorkload(workloadRes.data)
+		} catch {
+			console.error('Erro ao carregar dados.')
+		} finally {
+			setLoading(false)
+		}
+	}
 
     const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
     const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
@@ -79,6 +85,8 @@ export default function Agenda() {
         .filter(a => a.startTime.startsWith(selectedDateStr))
         .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
+    const selectedDayBlocked = blockedTimes.filter(b => b.startTime.startsWith(selectedDateStr))
+
     const activeAppointments = appointments.filter(a => a.status === 0 || a.status === 1)
 
     const formatTime = (dateStr) => new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -106,6 +114,16 @@ export default function Agenda() {
     for (let i = 0; i < firstDay; i++) calendarCells.push(null)
     for (let d = 1; d <= daysInMonth; d++) calendarCells.push(d)
     while (calendarCells.length % 7 !== 0) calendarCells.push(null)
+	
+	const getDayWorkload = (day) => {
+		const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+		return workload.find(w => w.date === dateStr)
+	}
+
+	const getBlockedTimesForDay = (day) => {
+		const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+		return blockedTimes.filter(b => b.startTime.startsWith(dateStr))
+	}
 
     return (
         <Layout>
@@ -181,6 +199,9 @@ export default function Agenda() {
                                     )
 
                                     const dayApps = getAppointmentsForDay(day)
+									const dayBlocked = getBlockedTimesForDay(day)
+									const dayWorkload = getDayWorkload(day)
+									const isFull = dayWorkload?.isFull || false
                                     const today = isToday(day)
                                     const selected = isSelected(day)
 
@@ -189,17 +210,21 @@ export default function Agenda() {
                                             onClick={() => handleDayClick(day)}
                                             className="min-h-[72px] p-1.5 rounded-xl cursor-pointer transition-all flex flex-col justify-between"
                                             style={{
-                                                background: today
-                                                    ? 'rgba(50,52,62,0.9)'
-                                                    : selected
-                                                        ? 'rgba(224,122,147,0.08)'
-                                                        : 'rgba(29,31,40,0.6)',
-                                                border: today
-                                                    ? '1px solid rgba(224,122,147,0.3)'
-                                                    : selected
-                                                        ? '1px solid rgba(224,122,147,0.4)'
-                                                        : '1px solid transparent'
-                                            }}>
+												background: isFull
+													? 'rgba(255,100,100,0.08)'
+													: today
+														? 'rgba(50,52,62,0.9)'
+														: selected
+															? 'rgba(224,122,147,0.08)'
+															: 'rgba(29,31,40,0.6)',
+												border: isFull
+													? '1px solid rgba(255,100,100,0.25)'
+													: today
+														? '1px solid rgba(224,122,147,0.3)'
+														: selected
+															? '1px solid rgba(224,122,147,0.4)'
+															: '1px solid transparent'
+											}}>
 
                                             <div className="flex items-center justify-between">
                                                 {today ? (
@@ -216,13 +241,13 @@ export default function Agenda() {
                                                 )}
                                             </div>
 
-                                            {dayApps.length > 0 && (
+                                            {(dayApps.length > 0 || dayBlocked.length > 0) && (
 												<div className="flex flex-col gap-0.5 my-1">
 													{dayApps.slice(0, 3).map((a, i) => {
 														const client = clients.find(c => c.name === a.clientName)
 														const firstName = a.clientName.split(' ')[0]
 														return (
-															<div key={i}
+															<div key={`app-${i}`}
 																className="rounded px-1 truncate"
 																style={{
 																	background: client?.color || '#e07a93',
@@ -235,6 +260,19 @@ export default function Agenda() {
 															</div>
 														)
 													})}
+													{dayBlocked.map((b, i) => (
+														<div key={`block-${i}`}
+															className="rounded px-1 truncate"
+															style={{
+																background: '#544245',
+																fontSize: '8px',
+																fontWeight: '600',
+																color: '#e1e1ef',
+																lineHeight: '14px'
+															}}>
+															Bloqueado
+														</div>
+													))}
 												</div>
 											)}
 
@@ -266,13 +304,36 @@ export default function Agenda() {
                                 </div>
                             </div>
 
-                            {dayAppointments.length === 0 ? (
+                            {dayAppointments.length === 0 && selectedDayBlocked.length === 0 ? (
                                 <div className="text-center py-8">
                                     <span className="material-symbols-outlined" style={{ fontSize: '40px', color: '#32343e' }}>event_busy</span>
                                     <p className="mt-2" style={{ fontSize: '13px', color: '#8a90a4' }}>Nenhum agendamento neste dia.</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-3">
+                                    {selectedDayBlocked.map(b => (
+                                        <div key={`block-${b.id}`}
+                                            className="relative overflow-hidden rounded-xl flex items-center gap-3 p-4 pl-5"
+                                            style={{ background: 'rgba(84,66,69,0.3)', border: '1px solid rgba(84,66,69,0.5)' }}>
+
+                                            <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl"
+                                                style={{ background: '#544245' }} />
+
+                                            <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#a18b8f' }}>block</span>
+
+                                            <div className="flex flex-col flex-1">
+                                                <p className="font-semibold" style={{ fontSize: '14px', color: '#e1e1ef' }}>
+                                                    Horário Bloqueado
+                                                </p>
+                                                <p style={{ fontSize: '12px', color: '#8a90a4' }}>
+                                                    {b.reason || 'Sem motivo informado'}
+                                                </p>
+                                                <p style={{ fontSize: '11px', color: '#544245' }}>
+                                                    {formatTime(b.startTime)} – {formatTime(b.endTime)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
                                     {dayAppointments.map(a => {
                                         const client = clients.find(c => c.name === a.clientName)
                                         return (
