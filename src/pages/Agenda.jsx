@@ -66,7 +66,9 @@ export default function Agenda() {
 
     const getAppointmentsForDay = (day) => {
         const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-        return appointments.filter(a => a.startTime.startsWith(dateStr) && a.status !== 2)
+        return appointments
+            .filter(a => a.startTime.startsWith(dateStr) && a.status !== 2)
+            .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
     }
 
     const isToday = (day) => {
@@ -348,12 +350,12 @@ export default function Agenda() {
 
                                             {(dayApps.length > 0 || dayBlocked.length > 0) && (
 												<div className="flex flex-col gap-0.5 my-1">
-													{dayApps.slice(0, 3).map((a, i) => {
+													{dayApps.map((a, i) => {
 														const client = clients.find(c => c.name === a.clientName)
 														const firstName = a.clientName.split(' ')[0]
 														return (
 															<div key={`app-${i}`}
-																className="rounded px-1 truncate"
+																className="rounded px-1 truncate h-1.5 md:h-auto"
 																style={{
 																	background: client?.color || '#e07a93',
 																	fontSize: '8px',
@@ -361,7 +363,7 @@ export default function Agenda() {
 																	color: '#0c0e16',
 																	lineHeight: '14px'
 																}}>
-																{firstName}
+																<span className="hidden md:inline">{firstName}</span>
 															</div>
 														)
 													})}

@@ -48,9 +48,18 @@ export default function Services() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+        const payload = {
+            ...form,
+            price: parseFloat(form.price),
+            pricePerUnit: form.pricingType === 0 || !form.pricePerUnit
+                ? null
+                : parseFloat(form.pricePerUnit)
+        }
+
         try {
-            if (editingService) await api.put(`/servicetype/${editingService.id}`, form)
-            else await api.post('/servicetype', form)
+            if (editingService) await api.put(`/servicetype/${editingService.id}`, payload)
+            else await api.post('/servicetype', payload)
             loadServices()
             closeModal()
         } catch (err) {
